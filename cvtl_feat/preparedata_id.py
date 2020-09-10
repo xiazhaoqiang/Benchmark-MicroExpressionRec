@@ -10,7 +10,7 @@ def main():
     version = 1 # 0, 1, 2, 4
     verFolder = 'v_{}'.format(version)
     alphas = range(0,1)
-    dataDir = os.path.join('dataset', verFolder)
+    dataDir = os.path.join('../dataset', verFolder)
     if not os.path.exists(dataDir):
         os.makedirs(dataDir)
 
@@ -18,8 +18,8 @@ def main():
         subjectDir = os.path.join(dataDir, dbname)
         if not os.path.exists(subjectDir):
             os.makedirs(subjectDir)
-        flowDir = os.path.join('dataset', 'flow_db', dbname)
-        filePath = os.path.join('dataset', 'benchmark_db', '{}.csv'.format(dbmeta_fn[i]))
+        flowDir = os.path.join('../dataset', 'flow_db', dbname)
+        filePath = os.path.join('../dataset', 'benchmark_db', '{}.csv'.format(dbmeta_fn[i]))
         meta_dict = {'subject':[],'filename':[],'emotion':[]}
         with open(filePath,'r') as f:
             for textline in f:

@@ -8,8 +8,8 @@ def main():
     verFolder = 'v_{}'.format(version)
     alphas = range(0,1)
 
-    dataDir = os.path.join('data', 'MEGC2019', verFolder)
-    filePath = os.path.join('dataset', 'megc_meta.csv')
+    dataDir = os.path.join('../data', 'MEGC2019', verFolder)
+    filePath = os.path.join('../dataset', 'megc_meta.csv')
     meta_dict = {'dbtype':[],'subject':[],'filename':[],'emotion':[],'subid':[],'dbid':[]}
     with open(filePath,'r') as f:
         for textline in f:
@@ -26,9 +26,9 @@ def main():
         idx = meta_dict['subid'].index(subject)
         subjectName = meta_dict['subject'][idx]
         # open the training/val/test list file
-        filePath = os.path.join('data','MEGC2019', verFolder, '{}_train.txt'.format(subjectName))
+        filePath = os.path.join('../data', 'MEGC2019', verFolder, '{}_train.txt'.format(subjectName))
         train_f = open(filePath,'w')
-        filePath = os.path.join('data','MEGC2019', verFolder, '{}_test.txt'.format(subjectName))
+        filePath = os.path.join('../data', 'MEGC2019', verFolder, '{}_test.txt'.format(subjectName))
         test_f = open(filePath,'w')
         # traverse each item, totally 442
         for i in range(0,sampleNum):

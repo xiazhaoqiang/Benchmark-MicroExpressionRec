@@ -1,4 +1,4 @@
-import os, sys, datetime, time, random, argparse, copy
+import os, sys, datetime, time, random, argparse
 
 import torch
 import torch.optim as optim
@@ -6,10 +6,10 @@ import torch.nn as nn
 import torchvision
 from torchvision import transforms
 
-from Datasets import MEGC2019 as MEGC2019
+from deep_model.Datasets import MEGC2019 as MEGC2019
 # from Datasets import MEGC2019_SI as MEGC2019
-import CNNs, MeNets, LossFunctions
-import Metrics as metrics
+from deep_model import LossFunctions, MeNets, CNNs
+
 
 def arg_process():
     parser = argparse.ArgumentParser()
@@ -120,7 +120,7 @@ def main():
         classes = 5
 
     # logPath = os.path.join('result', model_name+'_log.txt')
-    logPath = os.path.join('result', 'log_{}_v{}'.format(db_name,args.dataversion) + '.txt')
+    logPath = os.path.join('../result', 'log_{}_v{}'.format(db_name, args.dataversion) + '.txt')
     # logPath = os.path.join('result', runFileName+'_log_'+'v{}'.format(version)+'.txt')
     # resultPath = os.path.join('result', 'result_'+'v{}'.format(version)+'.pt')
     data_transforms = transforms.Compose([
@@ -131,7 +131,7 @@ def main():
     device = torch.device(gpuid if torch.cuda.is_available() else 'cpu')
     # obtian the subject information in LOSO
     verFolder = 'v_{}'.format(version)
-    filePath = os.path.join('dataset', verFolder, db_name, 'subName.txt')
+    filePath = os.path.join('../dataset', verFolder, db_name, 'subName.txt')
     subjects = []
     with open(filePath, 'r') as f:
         for textline in f:
@@ -154,7 +154,7 @@ def main():
         print('---------------------------')
         # random.seed(1)
         # setup a dataloader for training
-        imgDir = os.path.join('dataset', verFolder, db_name, '{}_train.txt'.format(subject))
+        imgDir = os.path.join('../dataset', verFolder, db_name, '{}_train.txt'.format(subject))
         image_db_train = MEGC2019(imgList=imgDir,transform=data_transforms)
         dataloader_train = torch.utils.data.DataLoader(image_db_train, batch_size=batch_size, shuffle=True, num_workers=1)
         # Initialize the model
@@ -183,7 +183,7 @@ def main():
         if loss_function == 'crossentropy':
             criterion = nn.CrossEntropyLoss()
         elif loss_function == 'focal':
-            criterion = LossFunctions.FocalLoss(class_num=classes,device=device)
+            criterion = LossFunctions.FocalLoss(class_num=classes, device=device)
         elif loss_function == 'balanced':
             criterion = LossFunctions.BalancedLoss(class_num=classes, device=device)
         elif loss_function == 'cosine':
@@ -194,7 +194,7 @@ def main():
         # torch.save(model_ft, os.path.join('data', 'model_s{}.pth').format(subject))
 
         # Test model
-        imgDir = os.path.join('dataset', verFolder, db_name, '{}_test.txt'.format(subject))
+        imgDir = os.path.join('../dataset', verFolder, db_name, '{}_test.txt'.format(subject))
         image_db_test = MEGC2019(imgList=imgDir,transform=data_transforms)
         dataloaders_test = torch.utils.data.DataLoader(image_db_test, batch_size=batch_size, shuffle=False,
                                                        num_workers=1)
@@ -212,8 +212,8 @@ def main():
     hours, rem = divmod(time_e-time_s,3600)
     miniutes, seconds = divmod(rem,60)
     # evaluate all data
-    eval_acc = metrics.accuracy()
-    eval_f1 = metrics.f1score()
+    eval_acc = Metrics.accuracy()
+    eval_f1 = Metrics.f1score()
     acc_w, acc_uw = eval_acc.eval(preds_db['all'], labels_db['all'])
     f1_w, f1_uw = eval_f1.eval(preds_db['all'], labels_db['all'])
     print('\nThe dataset has the ACC and F1:{:.4f} and {:.4f}'.format(acc_w, f1_w))
