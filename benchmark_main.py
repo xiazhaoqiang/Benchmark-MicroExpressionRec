@@ -1,7 +1,7 @@
 import argparse
 
 # pre-define model lists in benchmark
-cvtl_method_list = ['biwoof', 'lbp_top']
+cvtl_method_list = ['biwoof', 'lbptop']
 deep_method_list = ['strcn']
 
 def arg_process():
