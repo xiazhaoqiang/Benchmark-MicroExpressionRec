@@ -16,16 +16,16 @@ def arg_process():
     parser.add_argument('--dataset', default='casme2', help='the name of dataset')
     parser.add_argument('--gpuid', default='cuda:0', help='the gpu index for training')
     parser.add_argument('--dataversion', type=int, default=1, help='the version of input data')
-    parser.add_argument('--feature', default='lbptop', help='the feature method')
+    parser.add_argument('--feature', default='lbptop', help='the feature method') # lbptop, biwoof
     parser.add_argument('--classifier', default='svm', help='the classification method')
-    parser.add_argument('--C', type=float, default=0.1, help='the classification method')
+    parser.add_argument('--C', type=float, default=0.0001, help='the classification method')
     args = parser.parse_args()
     return args
 
 def main():
     """
      Goal: process images by file lists, evaluating the datasize with different model size
-     Version: 5.0
+     Version: 1.1
      """
     now = datetime.datetime.now()
     random.seed(1)
@@ -68,7 +68,7 @@ def main():
         # Initialize the model
         print('\tCreating convolutional model....')
         if args.classifier == 'svm':
-            model_ft = sklearn.svm.SVC(args.C,kernel='linear', tol=0.00001) # rbf,linear
+            model_ft = sklearn.svm.SVC(args.C, kernel='linear', tol=0.00001) # rbf,linear
         # Train and evaluate
         fea_db = image_db_train.getitems()
         model_ft.fit(fea_db['data'], np.array(fea_db['class_label']))

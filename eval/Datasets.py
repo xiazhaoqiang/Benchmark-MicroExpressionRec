@@ -30,7 +30,7 @@ class MEDB_CF():
         return {"data": feat_volume, "class_label": self.label}
 
 class MEDB_DM(torch.utils.data.Dataset):
-    """MEDB_DM dataset class deals with the datasets for conventional models"""
+    """MEDB_DM dataset class deals with the datasets for deep models"""
 
     def __init__(self, imgList, transform=None):
         self.imgPath = []
