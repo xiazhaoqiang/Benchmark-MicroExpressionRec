@@ -8,7 +8,7 @@ from torchvision import transforms
 
 from deep_model.Datasets import MEGC2019 as MEGC2019
 # from Datasets import MEGC2019_SI as MEGC2019
-from deep_model import LossFunctions, MeNets, CNNs
+from deep_model import LossFunctions, MERNets, CNNs
 
 
 def arg_process():
@@ -160,19 +160,19 @@ def main():
         # Initialize the model
         print('\tCreating deep model....')
         if model_name == 'menet_a':
-            model_ft = MeNets.MeNet_A(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size, model_version=model_version)
+            model_ft = MERNets.MeNet_A(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size, model_version=model_version)
         elif model_name == 'menet_d':
-            model_ft = MeNets.MeNet_D(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
+            model_ft = MERNets.MeNet_D(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
         elif model_name == 'menet_w':
-            model_ft = MeNets.MeNet_W(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
+            model_ft = MERNets.MeNet_W(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
         elif model_name == 'menet_h':
-            model_ft = MeNets.MeNet_H(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
+            model_ft = MERNets.MeNet_H(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
         elif model_name == 'menet_c':
-            model_ft = MeNets.MeNet_C(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
+            model_ft = MERNets.MeNet_C(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
         elif model_name == 'menet_e':
-            model_ft = MeNets.MeNet_E(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
+            model_ft = MERNets.MeNet_E(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
         elif model_name == 'menet_r':
-            model_ft = MeNets.MeNet_R(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
+            model_ft = MERNets.MeNet_R(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
         elif model_name == 'shallownet':
             model_ft = CNNs.ShallowNet()
         elif model_name == 'dualinception':

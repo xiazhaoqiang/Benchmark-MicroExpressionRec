@@ -5,6 +5,8 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import torch
 
+__all__ = ['MSELoss', 'FocalLoss', 'BalancedLoss', 'CosineLoss']
+
 class _Loss(Module):
     def __init__(self, size_average=None, reduce=None, reduction='mean'):
         super(_Loss, self).__init__()
@@ -13,67 +15,8 @@ class _Loss(Module):
         else:
             self.reduction = reduction
 
-class HHLoss(_Loss):
-    r"""Creates a criterion that measures the hierarchy label error (squared L2 norm) between
-    each element in the input :math:`x` and target :math:`y`.
-    """
-    def __init__(self, size_average=None, reduce=None, reduction='mean'):
-        super(HHLoss, self).__init__(size_average, reduce, reduction)
-        self.norm_p = 2
-        self.param_lambda = 0.001
-        self.param_beta = 0.002
-
-    def forward(self, input, target):
-        input_s = input.mm(input.t())
-        target_s = target.mm(target.t())
-        uncorr_M = input_s.mm(input_s.t())/input_s.shape[0]
-        I = torch.eye(input_s.shape[1]).type_as(uncorr_M)
-        loss = torch.norm(input_s-target_s,p=self.norm_p)\
-               + self.param_lambda*torch.norm(torch.sum(input_s,0),p=self.norm_p)\
-               + self.param_beta*torch.norm(uncorr_M-I,p=self.norm_p)
-        return loss
-        # input_s = input.mm(input.t())
-        # target_s = target.mm(target.t())
-        # return F.mse_loss(input_s, target_s, reduction=self.reduction)
-
-class HHLoss_bin(_Loss):
-    r"""Creates a criterion that measures the hierarchy label error (squared L2 norm) between
-    each element in the input :math:`x` and target :math:`y`.
-    """
-    def __init__(self, size_average=None, reduce=None, reduction='mean'):
-        super(HHLoss_bin, self).__init__(size_average, reduce, reduction)
-        self.th = 0.0
-        self.norm_p = 2
-        self.param_lambda = 0.001
-        self.param_beta = 0.002
-        self.mu = 0.001
-
-    def forward(self, input, target):
-        input_b = torch.sign(input)
-        input_s = input.mm(input.t())
-        # input_s = input_b.mm(input_b.t())
-        target_s = target.mm(target.t())
-        uncorr_M = input_s.mm(input_s.t()) / input_s.shape[0]
-        I = torch.eye(input_s.shape[1]).type_as(uncorr_M)
-        loss = torch.norm(input_s - target_s, p=self.norm_p) \
-               + self.param_lambda * torch.norm(torch.sum(input, 0), p=self.norm_p) \
-               + self.param_beta * torch.norm(uncorr_M - I, p=self.norm_p) \
-               + self.mu*torch.norm(torch.sum(input_b-input, 0), p=self.norm_p)
-        return loss
-        # input = (torch.sign(input)+1)/2
-        # input = torch.sign(input)
-        # input_s = input.mm(input.t())
-        # target_s = target.mm(target.t())
-        # uncorr_M = input_s.mm(input_s.t()) / input_s.shape[0]
-        # I = torch.eye(input_s.shape[1]).type_as(uncorr_M)
-        # loss = torch.norm(input_s - target_s, p=self.norm_p) \
-        #        + self.param_lambda * torch.norm(torch.sum(input, 0), p=self.norm_p) \
-        #        + self.param_beta * torch.norm(uncorr_M - I, p=self.norm_p) \
-        #        + self.mu*torch.norm(torch.sum(input, 0)
-        # return loss
-
 class MSELoss(_Loss):
-    r"""Creates a criterion that measures the mean squared error (squared L2 norm) between
+    """Creates a criterion that measures the mean squared error (squared L2 norm) between
     each element in the input :math:`x` and target :math:`y`.
     """
     __constants__ = ['reduction']
@@ -85,7 +28,7 @@ class MSELoss(_Loss):
         return F.mse_loss(input, target, reduction=self.reduction)
 
 class FocalLoss(nn.Module):
-    r"""
+    """
         This criterion is a implemenation of Focal Loss, which is proposed in
         Focal Loss for Dense Object Detection.
 
@@ -100,8 +43,6 @@ class FocalLoss(nn.Module):
             size_average(bool): By default, the losses are averaged over observations for each minibatch.
                                 However, if the field size_average is set to False, the losses are
                                 instead summed for each minibatch.
-
-
     """
     def __init__(self, class_num, alpha=None, gamma=2, size_average=True, device='cpu'):
         super(FocalLoss, self).__init__()
@@ -140,7 +81,7 @@ class FocalLoss(nn.Module):
         return loss
 
 class BalancedLoss(nn.Module):
-    r"""
+    """
         This criterion is a implemenation of Focal Loss, which is proposed in
         Focal Loss for Dense Object Detection.
 
@@ -155,8 +96,6 @@ class BalancedLoss(nn.Module):
             size_average(bool): By default, the losses are averaged over observations for each minibatch.
                                 However, if the field size_average is set to False, the losses are
                                 instead summed for each minibatch.
-
-
     """
     def __init__(self, class_num, alpha=None, gamma=2, size_average=True, device='cpu'):
         super(BalancedLoss, self).__init__()
@@ -198,7 +137,7 @@ class BalancedLoss(nn.Module):
         return loss
 
 class CosineLoss(nn.Module):
-    r"""
+    """
         This criterion is a implemenation of Cosine Loss
     """
     def __init__(self, size_average=True):
