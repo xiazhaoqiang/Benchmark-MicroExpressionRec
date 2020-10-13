@@ -1,8 +1,10 @@
 import os, sys, argparse, datetime, random, time
 import numpy as np
 import torch, sklearn.svm
-from eval.Datasets import MEDB_CF as MEDB
-import eval.Metrics as Metrics
+
+# the core classes are in a different directory while sharing the same parent directory
+sys.path.append('..')
+from core import Datasets, Metrics
 
 # public variales and strings
 cvtl_method_list = ['lbptop','biwoof']
@@ -64,7 +66,7 @@ def main():
         print('---------------------------')
         # setup a dataloader for training
         img_dir = os.path.join('..', 'dataset', verFolder, args.dataset, '{}_train.txt'.format(subject))
-        image_db_train = MEDB(imgList=img_dir)
+        image_db_train = Datasets.MEDB_CF(imgList=img_dir)
         # Initialize the model
         print('\tCreating convolutional model....')
         if args.classifier == 'svm':
@@ -74,7 +76,7 @@ def main():
         model_ft.fit(fea_db['data'], np.array(fea_db['class_label']))
         # Test model
         img_dir = os.path.join('..', 'dataset', verFolder, args.dataset, '{}_test.txt'.format(subject))
-        image_db_test = MEDB(imgList=img_dir)
+        image_db_test = Datasets.MEDB_CF(imgList=img_dir)
         fea_db = image_db_test.getitems()
         preds = model_ft.predict(fea_db['data'])
         print(preds)

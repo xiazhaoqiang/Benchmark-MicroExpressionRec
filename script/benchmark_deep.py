@@ -1,25 +1,22 @@
 import os, sys, datetime, time, random, argparse
-
 import torch
 import torch.optim as optim
 import torch.nn as nn
 import torchvision
 from torchvision import transforms
 
-from deep_model.Datasets import MEGC2019 as MEGC2019
-# from Datasets import MEGC2019_SI as MEGC2019
-from deep_model import LossFunctions, MERNets, CNNs
-
+# the core classes are in a different directory while sharing the same parent directory
+sys.path.append('..')
+from core import Datasets, MERNets, LossFunctions, Metrics
 
 def arg_process():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', default='samm', help='the name of dataset')
-    parser.add_argument('--dataversion', type=int, default=1, help='the version of input data')
-    parser.add_argument('--epochs', type=int, default=1, help='the number of training epochs')
+    parser.add_argument('--dataset', default='casme2', help='the name of dataset')
+    parser.add_argument('--dataversion', type=int, default=3, help='the version of input data')
+    parser.add_argument('--epochs', type=int, default=10, help='the number of training epochs')
     parser.add_argument('--gpuid', default='cuda:0', help='the gpu index for training')
     parser.add_argument('--learningrate', type=float, default=0.0005, help='the learning rate for training')
-    parser.add_argument('--modelname', default='menet_a', help='the model architecture')
-    parser.add_argument('--modelversion', type=int, default=3, help='the version of created model')
+    parser.add_argument('--modelname', default='RCNFNet', help='the model architecture')
     parser.add_argument('--batchsize', type=int, default=64, help='the batch size for training')
     parser.add_argument('--featuremap', type=int, default=16, help='the feature map size')
     parser.add_argument('--poolsize', type=int, default=5, help='the average pooling size')
@@ -91,6 +88,7 @@ def main():
     """
     Goal: process images by file lists, evaluating the datasize with different model size
     Version: 5.0
+    Usage: python --dataset smic
     """
     print('PyTorch Version: ', torch.__version__)
     print('Torchvision Version: ', torchvision.__version__)
@@ -110,7 +108,6 @@ def main():
     num_epochs = args.epochs
     lr = args.learningrate
     batch_size = args.batchsize
-    model_version = args.modelversion
     feature_map = args.featuremap
     loss_function = args.lossfunction
     pool_size = args.poolsize
@@ -120,18 +117,18 @@ def main():
         classes = 5
 
     # logPath = os.path.join('result', model_name+'_log.txt')
-    logPath = os.path.join('../result', 'log_{}_v{}'.format(db_name, args.dataversion) + '.txt')
+    logPath = os.path.join('..', 'result', 'log_{}_v{}'.format(db_name, args.dataversion) + '.txt')
     # logPath = os.path.join('result', runFileName+'_log_'+'v{}'.format(version)+'.txt')
     # resultPath = os.path.join('result', 'result_'+'v{}'.format(version)+'.pt')
+    print(db_name)
     data_transforms = transforms.Compose([
             transforms.ToTensor()
         ])
     # move to GPU
-    print(gpuid)
     device = torch.device(gpuid if torch.cuda.is_available() else 'cpu')
-    # obtian the subject information in LOSO
+    # obtain the subject information in LOSO
     verFolder = 'v_{}'.format(version)
-    filePath = os.path.join('../dataset', verFolder, db_name, 'subName.txt')
+    filePath = os.path.join('..', 'dataset', verFolder, db_name, 'subName.txt')
     subjects = []
     with open(filePath, 'r') as f:
         for textline in f:
@@ -154,29 +151,17 @@ def main():
         print('---------------------------')
         # random.seed(1)
         # setup a dataloader for training
-        imgDir = os.path.join('../dataset', verFolder, db_name, '{}_train.txt'.format(subject))
-        image_db_train = MEGC2019(imgList=imgDir,transform=data_transforms)
+        imgDir = os.path.join('..', 'dataset', verFolder, db_name, '{}_train.txt'.format(subject))
+        image_db_train = Datasets.MEDB_DM(imgList=imgDir, transform=data_transforms)
         dataloader_train = torch.utils.data.DataLoader(image_db_train, batch_size=batch_size, shuffle=True, num_workers=1)
         # Initialize the model
         print('\tCreating deep model....')
-        if model_name == 'menet_a':
-            model_ft = MERNets.MeNet_A(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size, model_version=model_version)
-        elif model_name == 'menet_d':
-            model_ft = MERNets.MeNet_D(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
-        elif model_name == 'menet_w':
-            model_ft = MERNets.MeNet_W(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
-        elif model_name == 'menet_h':
-            model_ft = MERNets.MeNet_H(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
-        elif model_name == 'menet_c':
-            model_ft = MERNets.MeNet_C(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
-        elif model_name == 'menet_e':
-            model_ft = MERNets.MeNet_E(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
-        elif model_name == 'menet_r':
-            model_ft = MERNets.MeNet_R(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
-        elif model_name == 'shallownet':
-            model_ft = CNNs.ShallowNet()
-        elif model_name == 'dualinception':
-            model_ft = CNNs.DualInceptionNet(num_input=3, num_classes=classes)
+        if model_name == 'STSTNet':
+            model_ft = MERNets.STSTNet(num_classes=classes)
+        elif model_name == 'DualInceptionNet':
+            model_ft = MERNets.DualInceptionNet(num_input=3, num_classes=classes)
+        elif model_name == 'RCNFNet':
+            model_ft = MERNets.RCNFNet(num_input=3, featuremaps=feature_map, num_classes=classes, num_layers=1, pool_size=pool_size)
         params_to_update = model_ft.parameters()
         optimizer_ft = optim.SGD(params_to_update, lr=lr, momentum=0.9)
         # optimizer_ft = optim.Adam(params_to_update, lr=lr)
@@ -194,8 +179,8 @@ def main():
         # torch.save(model_ft, os.path.join('data', 'model_s{}.pth').format(subject))
 
         # Test model
-        imgDir = os.path.join('../dataset', verFolder, db_name, '{}_test.txt'.format(subject))
-        image_db_test = MEGC2019(imgList=imgDir,transform=data_transforms)
+        imgDir = os.path.join('..', 'dataset', verFolder, db_name, '{}_test.txt'.format(subject))
+        image_db_test = Datasets.MEDB_DM(imgList=imgDir, transform=data_transforms)
         dataloaders_test = torch.utils.data.DataLoader(image_db_test, batch_size=batch_size, shuffle=False,
                                                        num_workers=1)
 
@@ -216,14 +201,13 @@ def main():
     eval_f1 = Metrics.f1score()
     acc_w, acc_uw = eval_acc.eval(preds_db['all'], labels_db['all'])
     f1_w, f1_uw = eval_f1.eval(preds_db['all'], labels_db['all'])
-    print('\nThe dataset has the ACC and F1:{:.4f} and {:.4f}'.format(acc_w, f1_w))
-    print('\nThe dataset has the UAR and UF1:{:.4f} and {:.4f}'.format(acc_uw, f1_uw))
-    log_f.write('\nOverall:\n\tthe ACC and F1 of all data are {:.4f} and {:.4f}\n'.format(acc_w, f1_w))
+    print('\nThe dataset {} has the ACC and F1:{:.4f} and {:.4f}'.format(db_name, acc_w, f1_w))
+    print('\nThe dataset {} has the UAR and UF1:{:.4f} and {:.4f}'.format(db_name, acc_uw, f1_uw))
+    log_f.write('\n{} Overall:\n\tthe ACC and F1 of all data are {:.4f} and {:.4f}\n'.format(db_name, acc_w, f1_w))
     log_f.write('\tthe UAR and UF1 of all data are {:.4f} and {:.4f}\n'.format(acc_uw, f1_uw))
     # writing parameters into log file
     print('\tNetname:{}, Dataversion:{}\n\tLearning rate:{}, Epochs:{}, Batchsize:{}.'.format(model_name,version,lr,num_epochs,batch_size))
     print('\tElapsed time: {:0>2}:{:0>2}:{:05.2f}'.format(int(hours),int(miniutes),seconds))
-    log_f.write('\nOverall:\n\tthe weighted and unweighted accuracy of all data are {:.4f} and {:.4f}\n'.format(acc_w,acc_uw))
     log_f.write('\nSetting:\tNetname:{}, Dataversion:{}\n\tLearning rate:{}, Epochs:{}, Batchsize:{}.\n'.format(model_name,
                                                                                                         version,
                                                                                                         lr,

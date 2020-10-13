@@ -1,8 +1,10 @@
-import os, argparse, time
+import os, sys, argparse, time
 import numpy as np
 from skimage import io
 
-from cvtl_feat import Features
+# the core classes are in a different directory while sharing the same parent directory
+sys.path.append('..')
+from core import Features
 
 # public variales and strings
 cvtl_method_list = ['lbptop', 'biwoof']
@@ -24,13 +26,13 @@ def main():
     args = arg_process()
     if args.method == 'lbptop':
         featdb_dir = os.path.join('..', 'dataset', 'lbptop_db')
-        feat_extractor = Features.LBP_TOP(P=8, R=1.0, type='uniform', blocks=(4,4,2))
+        feat_extractor = Features.LBP_TOP(P=8, R=1.0, type='uniform', blocks=(4, 4, 2))
         if not os.path.exists(featdb_dir):
             os.makedirs(featdb_dir)
     elif args.method == 'biwoof':
         featdb_dir = os.path.join('..', 'dataset', 'biwoof_db')
         flow_dir = os.path.join('..', 'dataset', 'flow_db')
-        feat_extractor = Features.BiWOOF(blocks=(6,6), img_size=(60,60))
+        feat_extractor = Features.BiWOOF(blocks=(6, 6), img_size=(60, 60))
         if not os.path.exists(featdb_dir):
             os.makedirs(featdb_dir)
         if not os.path.exists(flow_dir):

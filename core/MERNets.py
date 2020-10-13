@@ -141,7 +141,7 @@ class STSTNet(nn.Module):
     """ShallowNet network published in
         "Shallow Triple Stream Three-dimensional CNN (STSTNet) for Micro-expression Recognition"
     """
-    def __init__(self, pretrained=False, num_classes=3, init_weights=True):
+    def __init__(self, num_classes=3, init_weights=True):
         super(STSTNet, self).__init__()
         self.steam1 = nn.Sequential(
             nn.Conv2d(3, 3, kernel_size=3, stride=1, padding=1),
@@ -197,7 +197,7 @@ class DualInceptionNet(nn.Module):
     """DualInceptionNet network published in
         "Dual-Inception Network for Cross-Database Micro-Expression Recognition"
     """
-    def __init__(self, num_input, num_classes):
+    def __init__(self, num_input=3, num_classes=3):
         super(DualInceptionNet, self).__init__()
         # first stream
         self.conv1_1 = nn.Sequential(
