@@ -87,7 +87,7 @@ def test_model(model, dataloaders, device):
 def main():
     """
     Goal: process images by file lists, evaluating the datasize with different model size
-    Version: 5.0
+    Version: 1.0
     Usage: python --dataset smic
     """
     print('PyTorch Version: ', torch.__version__)
@@ -152,7 +152,7 @@ def main():
         # random.seed(1)
         # setup a dataloader for training
         imgDir = os.path.join('..', 'dataset', verFolder, db_name, '{}_train.txt'.format(subject))
-        image_db_train = Datasets.MEDB_DM(imgList=imgDir, transform=data_transforms)
+        image_db_train = Datasets.MEDB_GDM(imgList=imgDir, transform=data_transforms)
         dataloader_train = torch.utils.data.DataLoader(image_db_train, batch_size=batch_size, shuffle=True, num_workers=1)
         # Initialize the model
         print('\tCreating deep model....')
@@ -180,7 +180,7 @@ def main():
 
         # Test model
         imgDir = os.path.join('..', 'dataset', verFolder, db_name, '{}_test.txt'.format(subject))
-        image_db_test = Datasets.MEDB_DM(imgList=imgDir, transform=data_transforms)
+        image_db_test = Datasets.MEDB_GDM(imgList=imgDir, transform=data_transforms)
         dataloaders_test = torch.utils.data.DataLoader(image_db_test, batch_size=batch_size, shuffle=False,
                                                        num_workers=1)
 

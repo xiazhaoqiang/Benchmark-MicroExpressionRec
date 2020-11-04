@@ -6,8 +6,8 @@ dbtype = ['smic', 'casme2', 'samm']
 dbmeta_fn = ['smic-3classes', 'casme2-5classes', 'samm-5classes']
 
 def main():
-    version = 3  # starting from 1
-    input_type = 'geometric'
+    version = 6  # starting from 1
+    input_type = 'geometric' # 'geometric' or 'appearance'
     if input_type == 'geometric':
         feat_type = 'flow'
     else:
@@ -42,15 +42,22 @@ def main():
             sub_f.write('{}\n'.format(subject))
             # traverse each item
             for j in range(0,sampleN):
-                file_name = '{}_{}.png'.format(meta_dict['subject'][j], meta_dict['filename'][j])
-                file_path = os.path.join(subjectDir, file_name)
-                filePath_src = os.path.join(feat_dir, file_name)
-                if meta_dict['subject'][j] == subject:
-                    test_f.write('{} {}\n'.format(file_path,meta_dict['emotion'][j]))
-                    copyfile(filePath_src,file_path)
+                if input_type == 'geometric':
+                    file_name = '{}_{}.png'.format(meta_dict['subject'][j], meta_dict['filename'][j])
+                    file_path = os.path.join(subjectDir, file_name)
+                    filePath_src = os.path.join(feat_dir, file_name)
+                    if meta_dict['subject'][j] == subject:
+                        test_f.write('{} {}\n'.format(filePath_src, meta_dict['emotion'][j]))
+                        # copyfile(filePath_src, file_path)
+                    else:
+                        train_f.write('{} {}\n'.format(filePath_src, meta_dict['emotion'][j]))
+                        # copyfile(filePath_src, file_path)
                 else:
-                    train_f.write('{} {}\n'.format(file_path,meta_dict['emotion'][j]))
-                    copyfile(filePath_src, file_path)
+                    filePath_src = os.path.join('..', 'dataset', 'benchmark_db', dbname, meta_dict['subject'][j], meta_dict['filename'][j])
+                    if meta_dict['subject'][j] == subject:
+                        test_f.write('{} {}\n'.format(filePath_src, meta_dict['emotion'][j]))
+                    else:
+                        train_f.write('{} {}\n'.format(filePath_src, meta_dict['emotion'][j]))
             print('The subject: {}.'.format(subject))
             train_f.close()
             test_f.close()

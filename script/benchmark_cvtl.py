@@ -20,7 +20,7 @@ def arg_process():
     parser.add_argument('--dataversion', type=int, default=1, help='the version of input data')
     parser.add_argument('--feature', default='lbptop', help='the feature method') # lbptop, biwoof
     parser.add_argument('--classifier', default='svm', help='the classification method')
-    parser.add_argument('--C', type=float, default=0.0001, help='the classification method')
+    parser.add_argument('--C', type=float, default=1.0, help='the classification method')
     args = parser.parse_args()
     return args
 

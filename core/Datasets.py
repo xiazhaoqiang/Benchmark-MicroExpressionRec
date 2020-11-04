@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import torch.utils.data
 from PIL import Image
@@ -28,8 +29,8 @@ class MEDB_CF():
                 feat_volume[i, :] = feat.T
         return {"data": feat_volume, "class_label": self.label}
 
-class MEDB_DM(torch.utils.data.Dataset):
-    """MEDB_DM dataset class deals with the datasets for deep models"""
+class MEDB_GDM(torch.utils.data.Dataset):
+    """MEDB_DM dataset class deals with the datasets for deep geometric models"""
 
     def __init__(self, imgList, transform=None):
         self.imgPath = []
@@ -47,6 +48,41 @@ class MEDB_DM(torch.utils.data.Dataset):
         if self.transform is not None:
             img = self.transform(img)
         return {"data": img, "class_label": self.label[idx]}
+
+    def __len__(self):
+        return len(self.imgPath)
+
+class MEDB_ADM(torch.utils.data.Dataset):
+    """MEDB_DM dataset class deals with the datasets for deep appearance models"""
+
+    def __init__(self, imgList, transform=None):
+        self.img_dir = []
+        self.label = []
+        with open(imgList,'r') as f:
+            for textline in f:
+                texts = textline.strip('\n').split(' ')
+                self.img_dir.append(texts[0])
+                # notice the index: pytorch starts from 0
+                self.label.append(int(texts[1])-1)
+        self.transform = transform
+
+    def __getitem__(self, idx):
+        X = []
+        for file in os.listdir(self.img_dir[idx]):
+            filepath = os.path.join(self.img_dir[idx], file)
+            if os.path.splitext(filepath)[1] == '.jpg':
+                # img = Image.open(filepath).convert('RGB')
+                img = Image.open(filepath).convert('L')
+            elif os.path.splitext(filepath)[1] == '.bmp':
+                img = Image.open(filepath).convert('L')
+            else:
+                raise AssertionError('Not supported image format!')
+            if self.transform is not None:
+                img = self.transform(img)
+            X.append(img.squeeze_(0))
+        X = torch.stack(X, dim=0)
+
+        return {"data": X, "class_label": self.label[idx]}
 
     def __len__(self):
         return len(self.imgPath)

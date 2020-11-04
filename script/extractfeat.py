@@ -7,9 +7,10 @@ sys.path.append('..')
 from core import Features
 
 # public variales and strings
-cvtl_method_list = ['lbptop', 'biwoof']
+cvtl_method_list = ['rgb', 'lbptop', 'biwoof']
 dbtype = ['smic', 'casme2', 'samm']
 dbmeta_fn = ['smic-3classes', 'casme2-5classes', 'samm-5classes']
+framesN = 10
 
 # arguments for CMD
 def arg_process():
@@ -24,21 +25,22 @@ def main():
     imgdb_dir = os.path.join('..', 'dataset', 'benchmark_db')
     # build the folder for features
     args = arg_process()
+    if args.method == 'rgb':
+        featdb_dir = os.path.join('..', 'dataset', 'rgb_db')
+        feat_extractor = Features.PreProcess(frm_size=10)
     if args.method == 'lbptop':
         featdb_dir = os.path.join('..', 'dataset', 'lbptop_db')
         feat_extractor = Features.LBP_TOP(P=8, R=1.0, type='uniform', blocks=(4, 4, 2))
-        if not os.path.exists(featdb_dir):
-            os.makedirs(featdb_dir)
     elif args.method == 'biwoof':
         featdb_dir = os.path.join('..', 'dataset', 'biwoof_db')
         flow_dir = os.path.join('..', 'dataset', 'flow_db')
         feat_extractor = Features.BiWOOF(blocks=(6, 6), img_size=(60, 60))
-        if not os.path.exists(featdb_dir):
-            os.makedirs(featdb_dir)
         if not os.path.exists(flow_dir):
             os.makedirs(flow_dir)
     else:
         print('No method has been found!\n')
+    if not os.path.exists(featdb_dir):
+        os.makedirs(featdb_dir)
     # dealing with each dataset
     time_s = time.time()
     for i, dbname in enumerate(dbtype):
@@ -55,7 +57,7 @@ def main():
                 meta_dict['apex'].append(int(texts[3]))
                 meta_dict['offset'].append(int(texts[4]))
                 meta_dict['emotion'].append(int(texts[5]))
-        # saving folder
+        # construct the saving folder
         subject_svdir = os.path.join(featdb_dir, dbname)
         if not os.path.exists(subject_svdir):
             os.makedirs(subject_svdir)
@@ -66,16 +68,20 @@ def main():
         # dealing with each emotion folder
         for j,_ in enumerate(meta_dict['subject']):
             emotion_folder = os.path.join(imgdb_dir,dbname,meta_dict['subject'][j],meta_dict['filename'][j])
-            if args.method == 'lbptop':
-                feat_vec = feat_extractor.extractfeat_dir(emotion_folder)
-            elif args.method == 'biwoof':
-                feat_vec, flow_map = feat_extractor.extractfeat_dir(emotion_folder, meta_dict['onset'][j],
-                                                          meta_dict['apex'][j], meta_dict['offset'][j])
-                path_sv = os.path.join(flow_svdir,
-                                       '{}_{}.png'.format(meta_dict['subject'][j], meta_dict['filename'][j]))
-                io.imsave(path_sv,flow_map.astype(np.uint8))
-            path_sv = os.path.join(subject_svdir,'{}_{}.csv'.format(meta_dict['subject'][j],meta_dict['filename'][j]))
-            np.savetxt(path_sv, feat_vec, delimiter=",", fmt="%f")
+            if args.method == 'rgb':
+                feat_extractor.process_dir(emotion_folder)
+            else:
+                if args.method == 'lbptop':
+                    feat_vec = feat_extractor.extractfeat_dir(emotion_folder)
+                elif args.method == 'biwoof':
+                    feat_vec, flow_map = feat_extractor.extractfeat_dir(emotion_folder, meta_dict['onset'][j],
+                                                                        meta_dict['apex'][j], meta_dict['offset'][j])
+                    path_sv = os.path.join(flow_svdir,
+                                           '{}_{}.png'.format(meta_dict['subject'][j], meta_dict['filename'][j]))
+                    io.imsave(path_sv, flow_map.astype(np.uint8))
+                path_sv = os.path.join(subject_svdir,
+                                       '{}_{}.csv'.format(meta_dict['subject'][j], meta_dict['filename'][j]))
+                np.savetxt(path_sv, feat_vec, delimiter=",", fmt="%f")
             print('\tThe {}-th folder'.format(j))
 
     time_e = time.time()

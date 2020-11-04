@@ -42,11 +42,11 @@ def main():
                 file_path = os.path.join(subjectDir, file_name)
                 filePath_src = os.path.join(feat_dir, file_name)
                 if meta_dict['subject'][j] == subject:
-                    test_f.write('{} {}\n'.format(file_path,meta_dict['emotion'][j]))
-                    copyfile(filePath_src,file_path)
+                    test_f.write('{} {}\n'.format(filePath_src, meta_dict['emotion'][j]))
+                    # copyfile(filePath_src, file_path)
                 else:
-                    train_f.write('{} {}\n'.format(file_path,meta_dict['emotion'][j]))
-                    copyfile(filePath_src, file_path)
+                    train_f.write('{} {}\n'.format(filePath_src, meta_dict['emotion'][j]))
+                    # copyfile(filePath_src, file_path)
             print('The subject: {}.'.format(subject))
             train_f.close()
             test_f.close()

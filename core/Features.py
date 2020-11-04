@@ -5,6 +5,46 @@ from skimage import io, color
 import cv2
 import matplotlib.pyplot as plt
 
+class PreProcess():
+    def __init__(self, img_size=(224,224), frm_size=10):
+        super(PreProcess, self).__init__()
+        self.img_size = img_size
+        self.frm_size = frm_size
+
+    def normalize_temporal(self, volumeT):
+        """
+            NORMALIZE_TEMPORAL temporally normalizes the gray images
+            volumeT: H*W*T
+        """
+        h = volumeT.shape[0] #y, rows
+        w = volumeT.shape[1] #x, cols
+        t = volumeT.shape[2] #t, temps
+        return volumeT
+
+    def process_dir(self, rootdir):
+        emotion_files = []
+        for file in os.listdir(rootdir):
+            filepath = os.path.join(rootdir, file)
+            if os.path.splitext(filepath)[1] == '.jpg':
+                emotion_files.append(filepath)
+            elif os.path.splitext(filepath)[1] == '.bmp':
+                emotion_files.append(filepath)
+            else:
+                raise AssertionError('Not supported image format!')
+        emotion_files = natsort.natsorted(emotion_files)  # sort the file names in a natural order
+        fileN = len(emotion_files)
+        for j, filepath in enumerate(emotion_files):
+            # print(filepath)
+            # img = color.rgb2gray(io.imread(filepath))
+            img = io.imread(filepath, as_gray=True)
+            if j == 0:
+                img_volume = np.zeros((img.shape[0], img.shape[1], fileN), dtype=img.dtype)
+                img_volume[:, :, j] = img
+            else:
+                img_volume[:, :, j] = img
+        return self.normalize_temporal(img_volume)
+
+
 class LBP_TOP():
     def __init__(self, P=8, R=1.0, type='uniform', blocks=(4,4,2)):
         super(LBP_TOP, self).__init__()
@@ -99,7 +139,7 @@ class LBP_TOP():
                 emotion_files.append(filepath)
             else:
                 raise AssertionError('Not supported image format!')
-        natsort.natsorted(emotion_files)  # sort the filenames in a natutrual order
+        emotion_files = natsort.natsorted(emotion_files)  # sort the filenames in a natutrual order
         fileN = len(emotion_files)
         # img_volume = np.array([])
         for j, filepath in enumerate(emotion_files):
@@ -186,7 +226,7 @@ class BiWOOF():
                 emotion_files.append(filepath)
             else:
                 raise AssertionError('Not supported image format!')
-        natsort.natsorted(emotion_files)  # sort the file names in a natural order
+        emotion_files = natsort.natsorted(emotion_files)  # sort the file names in a natural order
         # Note: file index starting from 1 in the original labels
         #       image was input as float64 formatting, needs to be transformed
         #       color.rgb2gray is not used as the behavior of rgb2gray will change in scikit-image 0.19
